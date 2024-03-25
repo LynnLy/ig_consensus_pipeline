@@ -1,0 +1,7 @@
+name: changeo
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - changeo==1.3.0

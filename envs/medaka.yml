@@ -1,0 +1,6 @@
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - medaka==1.11.1
+    - minimap2==2.26

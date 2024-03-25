@@ -1,0 +1,2 @@
+cDNA_sample,read_config,tagged_bam
+ctest,test/test.read_config.tsv,test/test.tagged.sorted.bam

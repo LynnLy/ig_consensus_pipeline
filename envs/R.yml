@@ -1,0 +1,8 @@
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - R-essentials==4.3
+    - R-data.table==1.14.10
+    - R-argparser==0.7.1
+    - r-laf==0.8.4

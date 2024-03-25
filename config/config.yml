@@ -1,0 +1,39 @@
+# File locations
+igblast_folder: "bin/ncbi-igblast-1.22.0/"
+
+# For use with annotation module:
+sample_to_annotate: "test" # Sample name
+contigs_to_annotate_IGH: "test/test.IGH_contigs.fasta"
+contigs_to_annotate_IGK: "none"
+contigs_to_annotate_IGL: "results/ig_contigs/test/IGL/hapdup_phased_both.fasta"
+
+# Parameter Configuration
+database: # Used for IgBlast
+  - 'IMGT' # Will be de-duplicated
+#  - 'IMGT_full' # Not de-duplicated
+#  - 'curated' # From OGRDB
+#  - 'personalized'
+
+medaka: # Update the models to match the models used for basecalling
+    #snp_model: "r941_min_sup_g507"
+    #variant_model: "r941_min_sup_variant_g507"
+    snp_model: "r1041_e82_400bps_sup_v4.2.0"
+    variant_model: "r1041_e82_400bps_sup_variant_v4.2.0"
+    depth: 10 # Minimum number of subreads in the group
+    min_depth: 3 # Minimum depth at a particular base to be polished
+    max_reads: 150 # Capped for memory usage
+
+segment_types:
+  - "V"
+  - "D"
+  - "J"
+  - "C"
+
+assemblers:
+   - 'flye'
+
+flye:
+    mode: "--nano-hq"
+
+#refgenome: "chm13v2.0"
+refgenome: "GRCh38"
