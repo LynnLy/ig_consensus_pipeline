@@ -14,30 +14,30 @@
 > The second column specifies the prefix to the relevant work directory. So in this case, you would look for the following file:  <work_dir>/8f/a6c024.../<alias>_read_config.tsv, which contains the adapter configurations for each read.
 
 
-##### The consensus generation module will:
+##### The [consensus generation](rules/consensus_generation.smk) module will:
    - Extract a trimmed fasta from the wf-single-cell output
    - Run [IgBlast](https://ncbi.github.io/igblast/) on the raw reads
    - Annotate the IgBlast output with each read's cell barcode
-   - Filter the IgBlast output to get likely full length, non-chimeric IG reads (`scripts/filter_igblast_results.R`)
+   - [Filter](scripts/filter_igblast_results.R) the IgBlast output to get likely full length, non-chimeric IG reads
    - Create a smaller IgBlast output with fewer columns, which can be loaded into memory where necessary
-   - Extract reads for cell barcodes that have a full-length adapter configuration and enough IG read depth, and then format the names of those reads for medaka smolecule
+   - [Extract](scripts/filter_and_prep_for_smolecule.R) reads for cell barcodes that have a full-length adapter configuration and enough IG read depth, and then format the names of those reads for medaka smolecule
    - Run [medaka smolecule](https://github.com/nanoporetech/medaka/blob/master/medaka/smolecule.py) to create a consensus for each cell barcode for each locus (IGH, IGK, or IGL)
    - Run IgBlast on consensus sequences
 
 
-##### The assembly module will:
+##### The [assembly](rules/whole_genome_assembly.smk) module will:
    - Create a haploid genome assembly using [Flye](https://github.com/fenderglass/Flye)
    - Remap the raw reads to the assembly with minimap2
    - Run [HapDup](https://github.com/KolmogorovLab/hapdup) to create a diploid assembly
    - **This module requires additional prerequisites**.
 
-##### The annotation module will:
+##### The [annotation](rules/annotation.smk) module will:
    - Download and extract human IG alleles from the [IMGT/GENE-DB](https://www.imgt.org/download/GENE-DB/)
    - blastn IG reads against provided IG contigs
-   - Identify the best IG gene hit for each locus
+   - Identify the [best IG gene hit for each locus](scripts/get_best_ig_hits.R)
 
 
-##### The clonotyping / [Immcantation](https://immcantation.readthedocs.io/en/stable/getting_started/10x_tutorial.html) module will:
+##### The [clonotyping](rules/immcantation.smk) / [Immcantation](https://immcantation.readthedocs.io/en/stable/getting_started/10x_tutorial.html) module will:
    - Run IgBlast on the consensus sequences and parse the results with [changeo](https://changeo.readthedocs.io/en/stable/)
    - Use [SHazaM](https://shazam.readthedocs.io/en/stable/) and [SCOPer](https://scoper.readthedocs.io/en/stable/) to identify thresholds for clonal clustering and to annotate clones using either only heavy chains or adding light chains where available
    - Use changeo to reconstruct germline sequences, masking the D region
@@ -76,7 +76,7 @@ snakemake --use-conda -p -j {threads} consensus annotate_igh
 
 ##### Run the consensus generation module
 - Fill in `config/cDNA_basecall.csv` with the sample name and a link to the two wf-single-cell outputs described in [Analysis](#step-0-run-wf-single-cellhttpsgithubcomepi2me-labswf-single-cell)
-- Output: .fasta of consensus sequences for each locus (IGH/IGK/IGL) and cell barcode `results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database}/consensus.fasta`
+- Output: .fasta of consensus sequences for each locus (IGH/IGK/IGL) and cell barcode `results/ig_consensus/medaka_smolecule/{cDNA_sample}_{locus}.{database}/consensus.fasta`
 ```bash
 snakemake --use-conda -p -j {threads} consensus
 ```
@@ -84,7 +84,7 @@ snakemake --use-conda -p -j {threads} consensus
 
 ##### Run the assembly module
 - Fill in `config/gDNA_basecall.csv` with the sample name and link to the genomic fastq
-- Create a conda environment named "hapdup" and [install hapdup from source as describe here](https://github.com/KolmogorovLab/hapdup?tab=readme-ov-file#source-installation)
+- Create a conda environment named "hapdup" and [install hapdup from source as described here](https://github.com/KolmogorovLab/hapdup?tab=readme-ov-file#source-installation)
 - Output: `results/global_assembly/{sample}/hapdup/`
 ```bash
 snakemake --use-conda -p -j {threads} assembly
@@ -93,6 +93,7 @@ snakemake --use-conda -p -j {threads} assembly
 Optional: Extract 10kb+ contigs that mapped to an IG region in GRCh38 with >50%+ ReadCov
 - Requires a GRCh38 reference genome to be placed at `results/refgenome/GRCh38.fa`
 - Manual inspection recommended to make sure the right contigs were captured
+- Output: `results/ig_contigs/{sample}/{locus}/hapdup_phased_both.fasta`
 ```bash
 snakemake --use-conda -p -j {threads} ig_contigs
 ```
@@ -101,6 +102,10 @@ snakemake --use-conda -p -j {threads} ig_contigs
 ##### Run the annotation module
 - Fill in `config/config.yml` with the sample name under "sample_to_annotate"
 - Fill in `config/config.yml` with a path to IG contigs under the "contigs_to_annotate/IGK/IGL" fields
+- Outputs:
+  - `results/annotations/{sample}.{locus}.best_hits.tsv`: List of all the best alignments of functional genes
+  - `results/annotations/{sample}.{locus}_{VDJ_segment}.fasta`
+- Manual inspection recommended: IGH D segments may have spurious alignments outside of the expected IGH D region because they are so short.
 ```bash
 snakemake --use-conda -p -j {threads} annotate_igh annotate_igl
 ```
@@ -112,6 +117,7 @@ snakemake --use-conda -p -j {threads} annotate_igh annotate_igl
 `/usr/local/share/germlines/imgt/human` from the docker image to
 `results/refgenome/immcantation_gapped/human` on the local machine (If someone knows the original link to the gapped genes database, please let me know!)
 - Additionally, create a conda environment named "immcantation" and install immcantation packages through R
+- Output `results/ig_consensus/clonotyping/{cDNA_sample}_all.{database}.fmt7_db-pass_clone-pass_germ-pass-*.tsv`
 ```bash
 conda create --name immcantation -c conda-forge -c bioconda r-essentials r-tidyverse r-data.table r-patchwork r-argparser
 conda activate immcantation
