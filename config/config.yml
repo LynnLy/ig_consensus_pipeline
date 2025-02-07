@@ -14,6 +14,12 @@ database: # Used for IgBlast
 #  - 'curated' # From OGRDB
 #  - 'personalized'
 
+# Basename for the personalized database
+  # From annotate_igh/annotate_igl, these will be in results/annotations/{sample}.{locus}_{VDJ_segment}.fasta
+  # After manually validating the genes, the IGH and IGL genes should be combined into files
+  # with the suffix ".all_V_segments.fasta" ".all_D_segments.fasta", ".all_J_segments.fasta" etc.
+personalized_db: "results/manual/personalized_genome/20231025_wgs_duplex"
+
 medaka: # Update the models to match the models used for basecalling
     #snp_model: "r941_min_sup_g507"
     #variant_model: "r941_min_sup_variant_g507"

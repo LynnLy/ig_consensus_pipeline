@@ -72,21 +72,23 @@ rule consensus:
             cDNA_sample=cDNA_samples,
             roi_name=["IGH", "IGL", "IGK"],
             database1="IMGT",
-            database2=["IMGT", "personalized"]
+            database2=config['database']
         )
 
 
 rule clonotyping:
     input:
         germlines_heavy=expand(
-            "results/ig_consensus/clonotyping/{cDNA_sample}_all.{database}.fmt7_db-pass_clone-pass_germ-pass.tsv",
+            "results/ig_consensus/clonotyping/{cDNA_sample}_all.{database1}.{database2}.fmt7_db-pass_clone-pass_germ-pass.tsv",
             cDNA_sample=cDNA_samples,
-            database=config["database"],
+            database1="IMGT",
+            database2=config["database"],
         ),
         germlines_heavy_and_light=expand(
-            "results/ig_consensus/clonotyping/{cDNA_sample}_all.{database}.fmt7_db-pass_clone-pass_germ-pass-hl.tsv",
+            "results/ig_consensus/clonotyping/{cDNA_sample}_all.{database1}.{database2}.fmt7_db-pass_clone-pass_germ-pass-hl.tsv",
             cDNA_sample=cDNA_samples,
-            database=config["database"],
+            database1="IMGT",
+            database2=config["database"],
         ),
 
 

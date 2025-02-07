@@ -177,12 +177,11 @@ use rule igblast_imgt as igblast_personalized with:
     input:
         reads="results/ig_consensus/igblast_raw/chunked/{cDNA_sample}/{cDNA_sample}.{chunk}.fa",
         igblastn=config["igblast_folder"] + "bin/igblastn",
-        V="results/manual/personalized_genome/20231025_wgs_duplex.all_V_segments.fasta",
-        D="results/manual/personalized_genome/20231025_wgs_duplex.all_D_segments.fasta",
-        J="results/manual/personalized_genome/20231025_wgs_duplex.all_J_segments.fasta",
-        Vi="results/manual/personalized_genome/20231025_wgs_duplex.all_V_segments.fasta.ndb",
-        Di="results/manual/personalized_genome/20231025_wgs_duplex.all_D_segments.fasta.ndb",
-        Ji="results/manual/personalized_genome/20231025_wgs_duplex.all_J_segments.fasta.ndb",
-        Ci="results/manual/personalized_genome/20231025_wgs_duplex.all_C_segments.fasta.ndb",
+        V=config['personalized_db'] + ".all_V_segments.fasta",
+        D=config['personalized_db'] + ".all_D_segments.fasta",
+        J=config['personalized_db'] + ".all_J_segments.fasta",
+        Vi=config['personalized_db'] + ".all_V_segments.fasta.ndb",
+        Di=config['personalized_db'] + ".all_D_segments.fasta.ndb",
+        Ji=config['personalized_db'] + ".all_J_segments.fasta.ndb",
     wildcard_constraints:
         database="personalized",
