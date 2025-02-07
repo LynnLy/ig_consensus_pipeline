@@ -40,7 +40,7 @@ include: "rules/consensus_generation.smk"
 include: "rules/immcantation.smk"
 include: "rules/whole_genome_assembly.smk"
 include: "rules/annotation.smk"
-
+include: "rules/methylation.smk"
 
 wildcard_constraints:
     #gDNA_sample='|'.join([re.escape(x) for x in basecall_df["run_id"]]),
@@ -55,12 +55,25 @@ wildcard_constraints:
 
 rule consensus:
     input:
+        medaka_input=expand(
+            "results/ig_consensus/medaka_input/{cDNA_sample}_{roi_name}.{database}.pre_smolecule.fasta",
+            cDNA_sample=cDNA_samples,
+            roi_name=["IGH", "IGL", "IGK"],
+            database="IMGT"
+        ),
         medaka=expand(
             "results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database}/consensus.fasta",
             cDNA_sample=cDNA_samples,
             roi_name=["IGH", "IGL", "IGK"],
-            database="IMGT",
+            database="IMGT"
         ),
+        igblast_consensus=expand(
+            "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_{roi_name}.{database2}.tsv",
+            cDNA_sample=cDNA_samples,
+            roi_name=["IGH", "IGL", "IGK"],
+            database1="IMGT",
+            database2=["IMGT", "personalized"]
+        )
 
 
 rule clonotyping:
@@ -123,3 +136,18 @@ rule annotate_igk:
             segment_type=["V", "J", "C"],
             roi_name="IGK",
         ),
+
+rule methylation:
+    input:
+        mapped_to_diploid_assembly=expand(
+            "results/ig_contigs/modkit/{gDNA_sample}.{cov}cov.{snp}snp.bed",
+            gDNA_sample=config["sample_to_annotate"],
+            cov=[80, 90],
+            snp=3
+        ),
+        entropy=expand(
+            "results/ig_contigs/modkit/{gDNA_sample}.{cov}cov.{snp}snp.entropy",
+            gDNA_sample=config["sample_to_annotate"],
+            cov=[80, 90],
+            snp=3
+        )

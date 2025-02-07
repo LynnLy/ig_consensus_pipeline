@@ -1,0 +1,7 @@
+name: modkit
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - modkit

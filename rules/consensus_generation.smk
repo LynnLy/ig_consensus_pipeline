@@ -263,7 +263,7 @@ rule smolecule:
 
 use rule igblast_imgt as igblast_on_target_consensus with:
     input:
-        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database}/consensus.fasta",
+        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database1}/consensus.fasta",
         igblastn=config["igblast_folder"] + "bin/igblastn",
         V="databases/imgt/IG_V.rmdup",
         D="databases/imgt/IG_D.rmdup",
@@ -272,14 +272,14 @@ use rule igblast_imgt as igblast_on_target_consensus with:
         Di="databases/imgt/IG_D.rmdup.ndb",
         Ji="databases/imgt/IG_J.rmdup.ndb",
     output:
-        "results/ig_consensus/igblast_consensus/{cDNA_sample}_{roi_name}.{database}.tsv",
+        "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_{roi_name}.{database2}.tsv",
     wildcard_constraints:
-        database="IMGT",
+        database2="IMGT",
 
 
 use rule igblast_on_target_consensus as igblast_on_target_consensus_non_dedup with:
     input:
-        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database}/consensus.fasta",
+        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database1}/consensus.fasta",
         igblastn=config["igblast_folder"] + "bin/igblastn",
         V="databases/imgt/IG_V",
         D="databases/imgt/IG_D",
@@ -288,27 +288,27 @@ use rule igblast_on_target_consensus as igblast_on_target_consensus_non_dedup wi
         Di="databases/imgt/IG_D.ndb",
         Ji="databases/imgt/IG_J.ndb",
     output:
-        "results/ig_consensus/igblast_consensus/{cDNA_sample}_{roi_name}.{database}.tsv",
+        "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_{roi_name}.{database2}.tsv",
     wildcard_constraints:
-        database="IMGT_full",
+        database2="IMGT_full",
 
 
 use rule igblast_imgt as igblast_curated_consensus with:
     input:
-        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database}/consensus.fasta",
+        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database1}/consensus.fasta",
         igblastn=config["igblast_folder"] + "bin/igblastn",
         V="databases/ogrdb/ogrdb_human_ig.V",
         D="databases/ogrdb/ogrdb_human_igh.D",
         J="databases/ogrdb/ogrdb_human_ig.J",
     output:
-        "results/ig_consensus/igblast_consensus/{cDNA_sample}_{roi_name}.{database}.tsv",
+        "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_{roi_name}.{database2}.tsv",
     wildcard_constraints:
-        database="curated",
+        database2="curated",
 
 
 use rule igblast_imgt as igblast_personalized_consensus with:
     input:
-        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database}/consensus.fasta",
+        reads="results/ig_consensus/medaka_smolecule/{cDNA_sample}_{roi_name}.{database1}/consensus.fasta",
         igblastn=config["igblast_folder"] + "bin/igblastn",
         V="results/manual/personalized_genome/20231025_wgs_duplex.all_V_segments.fasta",
         D="results/manual/personalized_genome/20231025_wgs_duplex.all_D_segments.fasta",
@@ -317,17 +317,17 @@ use rule igblast_imgt as igblast_personalized_consensus with:
         Di="results/manual/personalized_genome/20231025_wgs_duplex.all_D_segments.fasta.ndb",
         Ji="results/manual/personalized_genome/20231025_wgs_duplex.all_J_segments.fasta.ndb",
     wildcard_constraints:
-        database="personalized",
+        database2="personalized",
     output:
-        "results/ig_consensus/igblast_consensus/{cDNA_sample}_{roi_name}.{database}.tsv",
+        "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_{roi_name}.{database2}.tsv",
 
 
 use rule combine_files_with_header as gather_igblast_by_cDNA_sample with:
     input:
         expand(
-            "results/ig_consensus/igblast_consensus/{cDNA_sample}_{roi_name}.{database}.tsv",
+            "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_{roi_name}.{database2}.tsv",
             roi_name=["IGL", "IGH", "IGK"],
             allow_missing=True,
         ),
     output:
-        "results/ig_consensus/igblast_consensus/{cDNA_sample}_all.{database}.tsv",
+        "results/ig_consensus/igblast_consensus.{database1}/{cDNA_sample}_all.{database2}.tsv",
